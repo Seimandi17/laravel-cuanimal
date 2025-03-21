@@ -4,9 +4,64 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    public function login(Request $request)
+    {
+        // // Validar los datos de entrada
+        // $request->validate([
+        //     'email' => 'required|email',
+        //     'password' => 'required',
+        // ]);
+
+        // Buscar al usuario por email
+        $user = User::where('email', $request->email)->first();
+
+        // Verificar si el usuario existe y la contraseña es correcta
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'message' => 'Credenciales inválidas',
+                'status' => false
+            ], 401);
+        }
+
+        // Revocar todos los tokens existentes del usuario
+        $user->tokens()->delete();
+
+        // Generar un nuevo token
+        $token = $user->createToken('api-token')->plainTextToken;
+
+        return response()->json([
+            'data' => [
+                'user' => $user,
+                'token' => $token
+            ],
+            'status' => true
+        ], 200);
+    }
+
+    public function logout(Request $request)
+{
+    // Obtener el usuario autenticado
+    $user = $request->user();
+
+    if (!$user) {
+        return response()->json([
+            'message' => 'No autenticado',
+            'status' => false
+        ], 401);
+    }
+
+    // Revocar el token actual
+    $user->currentAccessToken()->delete();
+
+    return response()->json([
+        'message' => 'Sesión cerrada con éxito',
+        'status' => true
+    ]);
+}
     public function index()
     {
         $provedor = User::all();
@@ -18,8 +73,32 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $user = User::create($request->all());
-        return  response()->json(['data' => $user, 'status' => true], 200);
+        // Validar los datos
+        // $request->validate([
+        //     'name' => 'required|string|max:255',
+        //     'email' => 'required|email|unique:users,email',
+        //     'password' => 'required|string|min:8',
+        // ]);
+
+        // Crear el usuario (encriptar la contraseña)
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'status' => 1,
+            'role_id' => 1,
+            'password' => Hash::make($request->password),
+        ]);
+
+        // Generar un token de acceso para el usuario recién creado
+        $token = $user->createToken('api-token')->plainTextToken;
+
+        return response()->json([
+            'data' => [
+                'user' => $user,
+                'token' => $token
+            ],
+            'status' => true
+        ], 201);
     }
 
     /**
@@ -37,7 +116,7 @@ class UserController extends Controller
     public function update(Request $request, string $id)
     {
         $user = User::findOrFail($id);
-        $user-> update($request->all());
+        $user->update($request->all());
         return  response()->json(['data' => [], 'status' => true]);
     }
 
