@@ -9,28 +9,24 @@ use Illuminate\Support\Facades\Hash;
 class UserController extends Controller
 {
     public function login(Request $request)
-    {
-        // // Validar los datos de entrada
-        // $request->validate([
-        //     'email' => 'required|email',
-        //     'password' => 'required',
-        // ]);
+{
+    try {
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
 
-        // Buscar al usuario por email
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('email', $validated['email'])->first();
 
-        // Verificar si el usuario existe y la contraseña es correcta
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (!$user || !Hash::check($validated['password'], $user->password)) {
             return response()->json([
                 'message' => 'Credenciales inválidas',
                 'status' => false
             ], 401);
         }
 
-        // Revocar todos los tokens existentes del usuario
         $user->tokens()->delete();
 
-        // Generar un nuevo token
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
@@ -40,11 +36,24 @@ class UserController extends Controller
             ],
             'status' => true
         ], 200);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json([
+            'data' => [],
+            'status' => false,
+            'message' => 'Error de validación',
+            'errors' => $e->errors(),
+        ], 422);
+    } catch (\Exception $e) {
+        return response()->json([
+            'data' => [],
+            'status' => false,
+            'message' => 'Error al iniciar sesión: ' . $e->getMessage(),
+        ], 500);
     }
+}
 
     public function logout(Request $request)
 {
-    // Obtener el usuario autenticado
     $user = $request->user();
 
     if (!$user) {
@@ -54,7 +63,6 @@ class UserController extends Controller
         ], 401);
     }
 
-    // Revocar el token actual
     $user->currentAccessToken()->delete();
 
     return response()->json([
@@ -73,23 +81,20 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        // Validar los datos
-        // $request->validate([
-        //     'name' => 'required|string|max:255',
-        //     'email' => 'required|email|unique:users,email',
-        //     'password' => 'required|string|min:8',
-        // ]);
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8',
+        ]);
 
-        // Crear el usuario (encriptar la contraseña)
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'status' => 1,
-            'role_id' => 1,
+            'role_id' => 3,
             'password' => Hash::make($request->password),
         ]);
 
-        // Generar un token de acceso para el usuario recién creado
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([

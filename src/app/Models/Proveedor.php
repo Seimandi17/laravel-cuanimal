@@ -6,17 +6,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class Proveedor extends Model
 {
+
+    protected $table = 'proveedors';
     protected $fillable = [
         'name',
         'lastName',
         'phone',
         'email',
-        'address',
-        'services',
-        'availability',
-        'certification',
+        'businessName',
+        // 'address',
+        'category',
+        // 'availability',
+        // 'certification',
         'description',
-        'evidence',
+        // 'evidence',
         'status',
     ];
     protected $casts = [

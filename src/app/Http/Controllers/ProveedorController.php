@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Proveedor;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class ProveedorController extends Controller
 {
@@ -21,19 +23,29 @@ class ProveedorController extends Controller
      */
     public function store(Request $request)
     {
-        // $request->validate([
-        //     'name' => 'required|string|max:255',
-        //     'lastName' => 'required|string|max:255',
-        //     'phone' => 'required|string|max:255',
-        //     'email' => 'required|email|unique:provedores,email',
-        //     'address' => 'required|string|max:255',
-        //     'services' => 'required|string|max:255',
-        //     'availability' => 'required|string|max:255',
-        //     'certification' => 'nullable|string|max:255',
-        //     'description' => 'required|string',
-        //     'evidence' => 'requeried|string|max:255',
-        // ]);
-        $provider = Proveedor::create($request->all());
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'lastName' => 'required|string|max:255',
+            'businessName' => 'required|string|max:255',
+            'phone' => 'required|string|max:255',
+            'email' => 'required|email|unique:proveedors,email',
+            'password' => 'required|string|max:255',
+            // 'address' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
+            // 'availability' => 'required|string|max:255',
+            // 'certification' => 'nullable|string|max:255',
+            'description' => 'required|string',
+            // 'evidence' => 'requeried|string|max:255',
+        ]);
+        User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'status' => 0,
+            'role_id' => 2,
+            'password' => Hash::make($request->password),
+        ]);
+
+        $provider = Proveedor::create($validated);
         return  response()->json(['data' => $provider, 'status' => true], 200);
     }
 

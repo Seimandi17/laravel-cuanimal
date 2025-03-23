@@ -17,12 +17,13 @@ return new class extends Migration
             $table->string('lastName');
             $table->string('phone');
             $table->string('email');
-            $table->string('address');
-            $table->string('services');
-            $table->string('availability');
-            $table->string('certification')->nullable();
+            // $table->string('address');
+            $table->string('category');
+            $table->string('businessName');
+            // $table->string('availability');
+            // $table->string('certification')->nullable();
             $table->string('description');
-            $table->string('evidence');
+            // $table->string('evidence');
             $table->boolean('status')->default(0);
             $table->timestamps();
         });
@@ -34,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('proveedors');
+        Schema::dropIfExists('provedores');
     }
 };
