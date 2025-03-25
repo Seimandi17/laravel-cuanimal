@@ -17,4 +17,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('categories', CategoriesController::class);
     Route::apiResource('products', ProductsController::class);
     Route::post('logout', [UserController::class, 'logout']);
+    Route::put('validateProvider',[ProveedorController::class, 'validateProvider']);
+    Route::get('listProviderPending',[ProveedorController::class, 'listProviderPending']);
+    Route::get('listProviderAll',[ProveedorController::class, 'listProviderAll']);
 });

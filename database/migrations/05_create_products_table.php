@@ -22,6 +22,9 @@ return new class extends Migration
             $table->string('province');
             $table->string('city');
             $table->string('address');
+            $table->string('status')->default('activo');
+            $table->unsignedBigInteger('provider_id');
+            $table->foreign('provider_id')->references('id')->on('proveedors');
             $table->string('coverImg');
             $table->string('extraImg');
             $table->timestamps();

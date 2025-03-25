@@ -24,6 +24,12 @@ class UserController extends Controller
                 'status' => false
             ], 401);
         }
+        if ($user && (!$user->status === 'active')) {
+            return response()->json([
+                'message' => 'pending',
+                'status' => false
+            ], 400);
+        }
 
         $user->tokens()->delete();
 
@@ -83,24 +89,26 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'lastName' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8',
         ]);
 
         $user = User::create([
             'name' => $request->name,
+            'lastName' => $request->lastName,
             'email' => $request->email,
-            'status' => 1,
+            'status' => 'active',
             'role_id' => 3,
             'password' => Hash::make($request->password),
         ]);
 
-        $token = $user->createToken('api-token')->plainTextToken;
+        // $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
             'data' => [
-                'user' => $user,
-                'token' => $token
+                'user' => $user
+                // 'token' => $token
             ],
             'status' => true
         ], 201);
