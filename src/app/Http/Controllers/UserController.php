@@ -24,6 +24,12 @@ class UserController extends Controller
                 'status' => false
             ], 401);
         }
+        if ($user && !$user->status) {
+            return response()->json([
+                'message' => 'pending',
+                'status' => false
+            ], 400);
+        }
 
         $user->tokens()->delete();
 
