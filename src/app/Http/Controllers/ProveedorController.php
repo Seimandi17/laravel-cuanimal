@@ -21,7 +21,7 @@ class ProveedorController extends Controller
 
     public function listProviderPending()
     {
-        $proveedores = Proveedor::with('user:id,name,email,status')
+        $proveedores = Proveedor::with('user:id,name,lastName,email,status')
             ->whereHas('user', function ($query) {
                 $query->where('status', 'pending');
             })
@@ -33,7 +33,7 @@ class ProveedorController extends Controller
 
     public function listProviderAll()
     {
-        $proveedores = Proveedor::with('user:id,name,email,status')
+        $proveedores = Proveedor::with('user:id,name,lastName,email,status')
             ->whereHas('user', function ($query) {
                 $query->where('status', 'active');
             })
