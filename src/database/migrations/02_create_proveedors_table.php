@@ -13,19 +13,17 @@ return new class extends Migration
     {
         Schema::create('proveedors', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('lastName');
             $table->string('phone');
-            $table->string('email');
-            // $table->string('address');
             $table->string('category');
             $table->string('businessName');
-            // $table->string('availability');
-            // $table->string('certification')->nullable();
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users');
             $table->string('description');
-            // $table->string('evidence');
-            $table->boolean('status')->default(0);
             $table->timestamps();
+            // $table->string('address');
+            // $table->string('evidence');
+            // $table->string('certification')->nullable();
+            // $table->string('availability');
         });
         
     }
