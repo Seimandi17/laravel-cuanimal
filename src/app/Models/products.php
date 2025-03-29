@@ -39,4 +39,8 @@ class products extends Model
         // Si no, agregar el prefijo /storage/
         return $value ? Storage::url($value) : null;
     }
+    public function provider()
+    {
+        return $this->belongsTo(Proveedor::class, 'provider_id', 'id');
+    }
 }

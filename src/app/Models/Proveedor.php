@@ -27,4 +27,9 @@ class Proveedor extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    public function products()
+    {
+        return $this->hasMany(products::class, 'provider_id', 'id');
+    }
 }
