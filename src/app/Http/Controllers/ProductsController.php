@@ -18,28 +18,30 @@ class ProductsController extends Controller
     {
         try {
             $user = Auth::user();
-            $role = $user->role_id;
-
-            switch ($role) {
-                case 1:
-                    $query = Products::query();
-                    $query->with('provider');
-                    $products = $query->get();
-                    break;
-
-                case 3:
-                    $products = Products::all();
-                    break;
-
-                case 2:
-                    $id = 1;
-                    $products = Products::where('provider_id', $id)->get();
-                    break;
-
-                default:
-                    return response()->json(['error' => 'Invalid role'], 403);
+    
+            if ($user) {
+                // Usuario autenticado
+                $role = $user->role_id;
+    
+                switch ($role) {
+                    case 1: // Admin
+                        $products = Products::with('provider')->get();
+                        break;
+    
+                    case 2: // Proveedor
+                        $products = Products::where('provider_id', $user->id)->get();
+                        break;
+    
+                    case 3: // Cliente
+                    default:
+                        $products = Products::all();
+                        break;
+                }
+            } else {
+                // Usuario NO autenticado (público)
+                $products = Products::all();
             }
-
+    
             return response()->json([
                 'data' => $products,
                 'status' => true,
@@ -53,6 +55,7 @@ class ProductsController extends Controller
             ], 500);
         }
     }
+    
 
     /**
      * Store a newly created resource in storage.
@@ -65,13 +68,14 @@ class ProductsController extends Controller
                 'description' => 'required|string',
                 'price' => 'required|numeric|min:0',
                 'contact' => 'required|string',
-                'coverImg' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Máximo 2MB
-                'extraImg' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Opcional, máximo 2MB
+                'coverImg' => 'required|image|mimes:jpeg,png,jpg,gif', // Máximo 2MB
+                'extraImg' => 'nullable|image|mimes:jpeg,png,jpg,gif', // Opcional, máximo 2MB
                 'province' => 'required|string',
                 'status' => 'nullable|string',
                 'address' => 'required|string',
                 'city' => 'required|string',
                 'category_id' => 'required|exists:categories,id',
+                'provider_id' => 'required',
             ]);
 
             $data = $validated;
