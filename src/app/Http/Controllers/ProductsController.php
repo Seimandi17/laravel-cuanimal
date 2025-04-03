@@ -67,15 +67,16 @@ class ProductsController extends Controller
                 'name' => 'required|string|max:255',
                 'description' => 'required|string',
                 'price' => 'required|numeric|min:0',
-                'contact' => 'required|string',
-                'coverImg' => 'required|image|mimes:jpeg,png,jpg,gif', // Máximo 2MB
-                'extraImg' => 'nullable|image|mimes:jpeg,png,jpg,gif', // Opcional, máximo 2MB
+                'contact' => 'nullable|string',
+                'coverImg' => 'required|image|mimes:jpeg,png,jpg,gif',
+                'extraImg' => 'nullable|image|mimes:jpeg,png,jpg,gif',
                 'province' => 'required|string',
+                'pet' => 'required|in:perros,gatos,ambos',
+                'category' => 'required|string|max:255', 
                 'status' => 'nullable|string',
                 'address' => 'required|string',
                 'city' => 'required|string',
-                'category_id' => 'required|exists:categories,id',
-                'provider_id' => 'required',
+                'provider_id' => 'required|exists:proveedors,id',
             ]);
 
             $data = $validated;
