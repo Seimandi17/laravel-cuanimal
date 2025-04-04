@@ -10,21 +10,29 @@ class Proveedor extends Model
     protected $table = 'proveedors';
     protected $fillable = [
         'name',
-        'lastName',
         'phone',
         'email',
         'businessName',
-        // 'address',
+        'user_id',
         'category',
-        // 'availability',
-        // 'certification',
         'description',
+        // 'address',
+        // 'certification',
+        // 'availability',
         // 'evidence',
-        'status',
     ];
     protected $casts = [
-        'status' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    public function products()
+    {
+        return $this->hasMany(products::class, 'provider_id', 'id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
 }

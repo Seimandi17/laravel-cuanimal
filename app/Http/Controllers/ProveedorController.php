@@ -15,7 +15,32 @@ class ProveedorController extends Controller
     public function index()
     {
         $provedor = Proveedor::all();
+        
         return response()->json(['data' => $provedor, 'status' => true]);
+    }
+
+    public function listProviderPending()
+    {
+        $proveedores = Proveedor::with('user:id,name,lastName,email,status')
+            ->whereHas('user', function ($query) {
+                $query->where('status', 'pending');
+            })
+            ->select('id', 'businessName', 'user_id')
+            ->get();
+        
+        return response()->json(['data' => $proveedores, 'status' => true]);
+    }
+
+    public function listProviderAll()
+    {
+        $proveedores = Proveedor::with('user:id,name,lastName,email,status')
+            ->whereHas('user', function ($query) {
+                $query->where('status', 'active');
+            })
+            ->select('id', 'businessName', 'user_id')
+            ->get();
+        
+        return response()->json(['data' => $proveedores, 'status' => true]);
     }
 
     /**
@@ -28,25 +53,43 @@ class ProveedorController extends Controller
             'lastName' => 'required|string|max:255',
             'businessName' => 'required|string|max:255',
             'phone' => 'required|string|max:255',
-            'email' => 'required|email|unique:proveedors,email',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|string|max:255',
-            // 'address' => 'required|string|max:255',
             'category' => 'required|string|max:255',
+            'description' => 'required|string',
             // 'availability' => 'required|string|max:255',
             // 'certification' => 'nullable|string|max:255',
-            'description' => 'required|string',
-            // 'evidence' => 'requeried|string|max:255',
+            // 'address' => 'required|string|max:255',
+            // 'evidence' => 'required|string|max:255',
         ]);
-        User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'status' => 0,
+        $user = User::create([
+            'name' => $validated['name'],
+            'lastName' => $validated['lastName'],
+            'email' => $validated['email'],
             'role_id' => 2,
-            'password' => Hash::make($request->password),
+            'status' => 'pending',
+            'password' => Hash::make($validated['password']),
         ]);
+        if (!$user) {
+            return response()->json([
+                'data' => [],
+                'message' => "server error",
+                'status' => false
+            ], 500);
+        }
+        $provider = [
+            'businessName' => $validated['businessName'],
+            'phone' => $validated['phone'],
+            'category' => $validated['category'],
+            'description' => $validated['description'],
+            'user_id' => $user->id
+        ];
 
-        $provider = Proveedor::create($validated);
-        return  response()->json(['data' => $provider, 'status' => true], 200);
+        $data = Proveedor::create($provider);
+        return  response()->json([
+            'data' => $data,
+            'status' => true
+        ], 201);
     }
 
     /**
@@ -64,8 +107,34 @@ class ProveedorController extends Controller
     public function update(Request $request, string $id)
     {
         $provider = Proveedor::findOrFail($id);
-        $provider-> update($request->all());
+        $provider->update($request->all());
         return  response()->json(['data' => [], 'status' => true]);
+    }
+
+    public function validateProvider(Request $request)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string|max:255',
+            'id' => 'required',
+        ]);
+        
+        $provider = Proveedor::findOrFail($validated['id']);
+        $user = User::findOrFail($provider->user_id);
+
+        if($validated['status'] === 'rejected'){
+            
+            $provider->delete();
+            $user->delete();
+
+        }else{
+
+            $user->update($validated);
+        }
+
+        return  response()->json([
+            'data' =>  Proveedor::with('user')->get(),
+            'status' => true
+        ], 200);
     }
 
     /**
