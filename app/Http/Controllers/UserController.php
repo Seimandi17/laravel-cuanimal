@@ -76,11 +76,23 @@ class UserController extends Controller
         'status' => true
     ]);
 }
-    public function index()
-    {
-        $provedor = User::all();
-        return response()->json(['data' => $provedor, 'status' => true]);
+public function index()
+{
+    try {
+        $clientes = User::where('role_id', 3)->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $clientes
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Error al obtener clientes: ' . $e->getMessage()
+        ], 500);
     }
+}
+
 
     /**
      * Store a newly created resource in storage.

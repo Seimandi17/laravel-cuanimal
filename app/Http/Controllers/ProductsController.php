@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Products;
 use Illuminate\Http\Request;
+use App\Models\Proveedor;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -63,6 +64,8 @@ class ProductsController extends Controller
     public function store(Request $request)
     {
         try {
+            $user = Auth::user();
+
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'required|string',
@@ -71,15 +74,21 @@ class ProductsController extends Controller
                 'coverImg' => 'required|image|mimes:jpeg,png,jpg,gif',
                 'extraImg' => 'nullable|image|mimes:jpeg,png,jpg,gif',
                 'province' => 'required|string',
-                'pet' => 'required|in:perros,gatos,ambos',
+                'pet' => 'nulleable|in:perros,gatos,ambos',
                 'category' => 'required|string|max:255', 
                 'status' => 'nullable|string',
                 'address' => 'required|string',
                 'city' => 'required|string',
-                'provider_id' => 'required|exists:proveedors,id',
             ]);
-
             $data = $validated;
+            
+            $provider = Proveedor::where('user_id', $user->id)->first();
+            
+            if (!$provider) {
+                return response()->json(['error' => 'Proveedor no encontrado para este usuario'], 404);
+            }
+
+            $data['provider_id'] = $provider->id;
 
             if ($request->hasFile('coverImg')) {
                 $path = $request->file('coverImg')->store('products', 'public');
@@ -93,8 +102,7 @@ class ProductsController extends Controller
 
             $product = Products::create($data);
 
-            $product->coverImg = Storage::url($product->coverImg);
-            $product->extraImg = $product->extraImg ? Storage::url($product->extraImg) : null;
+
 
             return response()->json([
                 'data' => $product,
@@ -137,10 +145,10 @@ class ProductsController extends Controller
     public function show(string $id)
     {
         try {
-            $product = Products::findOrFail($id);
-            $product->coverImg = Storage::url($product->coverImg);
-            $product->extraImg = $product->extraImg ? Storage::url($product->extraImg) : null;
+            $product = Products::with('provider')->findOrFail($id);
+    
 
+    
             return response()->json([
                 'data' => $product,
                 'status' => true,
@@ -177,7 +185,7 @@ class ProductsController extends Controller
                 'province' => 'sometimes|required|string',
                 'address' => 'sometimes|required|string',
                 'city' => 'sometimes|required|string',
-                'category_id' => 'sometimes|required|exists:categories,id',
+                'category' => 'sometimes|required|exists:categories,id',
             ]);
 
             $product = Products::findOrFail($id);
@@ -203,8 +211,7 @@ class ProductsController extends Controller
 
             $product->update($data);
 
-            $product->coverImg = Storage::url($product->coverImg);
-            $product->extraImg = $product->extraImg ? Storage::url($product->extraImg) : null;
+
 
             return response()->json([
                 'data' => $product,

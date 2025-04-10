@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Model;
 
-class products extends Model
+class Products extends Model
 {
     protected $fillable = [
     'name',
@@ -17,6 +17,7 @@ class products extends Model
     'contact',
     'city',
     'address',
+    'provider_id',
     'coverImg',
     'extraImg'
     ];
