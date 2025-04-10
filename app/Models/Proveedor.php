@@ -28,7 +28,7 @@ class Proveedor extends Model
 
     public function products()
     {
-        return $this->hasMany(products::class, 'provider_id', 'id');
+        return $this->hasMany(Products::class, 'provider_id', 'id');
     }
 
     public function user()

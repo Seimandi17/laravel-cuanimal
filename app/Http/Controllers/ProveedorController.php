@@ -37,7 +37,7 @@ class ProveedorController extends Controller
             ->whereHas('user', function ($query) {
                 $query->where('status', 'active');
             })
-            ->select('id', 'businessName', 'user_id')
+            ->select('id', 'businessName', 'user_id','phone', 'created_at')
             ->get();
         
         return response()->json(['data' => $proveedores, 'status' => true]);

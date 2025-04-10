@@ -58,7 +58,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     return response()->json([
                         'data' => [],
                         'status' => false,
-                        'message' => 'Error de base de datos: Integrity constraint violation (posiblemente category_id no existe).',
+                        'message' => 'Error de base de datos: Integrity constraint violation (posiblemente category no existe).',
                     ], $statusCode);
                 }
 
