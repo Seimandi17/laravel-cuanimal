@@ -3,6 +3,7 @@
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\ContactoGeneralController;
 use App\Http\Controllers\ContactoController;
+use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\ProveedorContactoController;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\ProveedorController;
@@ -36,4 +37,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reservations', [ReservationController::class, 'store']);
     Route::get('/reservations', [ReservationController::class, 'index']);
     Route::get('/historial', [HistorialController::class, 'index']);
+    Route::get('/conversations', [ConversationController::class, 'index']);
+    Route::post('/conversations', [ConversationController::class, 'store']);
+    Route::get('/conversations/{id}', [ConversationController::class, 'show']);
+    Route::post('/conversations/{id}/messages', [ConversationController::class, 'sendMessage']);
+    Route::delete('/conversations/{id}', [ConversationController::class, 'destroy']);
+    Route::get('/admin/conversations', [ConversationController::class, 'adminIndex']);
+    Route::get('/admin/unassigned-conversations', [ConversationController::class, 'unassigned']);
+    Route::post('/admin/conversations/{id}/assign', [ConversationController::class, 'assign']);
 });
