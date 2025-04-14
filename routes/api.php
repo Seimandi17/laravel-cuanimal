@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\CategoriesController;
+use App\Http\Controllers\ContactoGeneralController;
+use App\Http\Controllers\ContactoController;
+use App\Http\Controllers\ProveedorContactoController;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ReservationController;
@@ -16,7 +19,9 @@ Route::post('send-message', [MessageController::class, 'sendMessage']);
 Route::post('login', [UserController::class, 'login']);
 Route::post('register', [UserController::class, 'store']);
 Route::post('proveedor', [ProveedorController::class, 'store']);
-
+Route::post('/contacto-general', [ContactoGeneralController::class, 'enviar']);
+Route::post('/contacto', [ContactoController::class, 'enviar']);
+Route::post('contacto-proveedor', [ProveedorContactoController::class, 'enviar']);
 
 
 Route::middleware('auth:sanctum')->group(function () {
