@@ -36,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('listProviderAll',[ProveedorController::class, 'listProviderAll']);
     Route::post('/reservations', [ReservationController::class, 'store']);
     Route::get('/reservations', [ReservationController::class, 'index']);
+    Route::patch('/reservations/{id}', [ReservationController::class, 'update']); 
     Route::get('/historial', [HistorialController::class, 'index']);
     Route::get('/conversations', [ConversationController::class, 'index']);
     Route::post('/conversations', [ConversationController::class, 'store']);
