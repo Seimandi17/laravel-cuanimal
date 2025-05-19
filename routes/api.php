@@ -4,9 +4,11 @@ use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\ContactoGeneralController;
 use App\Http\Controllers\ContactoController;
 use App\Http\Controllers\ConversationController;
+use App\Http\Controllers\PedidoTransporteController;
 use App\Http\Controllers\ProveedorContactoController;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\RecorridoController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\MessageController;
@@ -23,6 +25,9 @@ Route::post('proveedor', [ProveedorController::class, 'store']);
 Route::post('/contacto-general', [ContactoGeneralController::class, 'enviar']);
 Route::post('/contacto', [ContactoController::class, 'enviar']);
 Route::post('contacto-proveedor', [ProveedorContactoController::class, 'enviar']);
+Route::post('/pedidos-transporte', [PedidoTransporteController::class, 'store']);
+Route::get('/pedidos-transporte', [PedidoTransporteController::class, 'index']);
+Route::get('/blog-recorrido', [RecorridoController::class, 'index']);
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -34,6 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('validateProvider',[ProveedorController::class, 'validateProvider']);
     Route::get('listProviderPending',[ProveedorController::class, 'listProviderPending']);
     Route::get('listProviderAll',[ProveedorController::class, 'listProviderAll']);
+    Route::post('/blog-recorrido', [RecorridoController::class, 'store']);
     Route::post('/reservations', [ReservationController::class, 'store']);
     Route::get('/reservations', [ReservationController::class, 'index']);
     Route::patch('/reservations/{id}', [ReservationController::class, 'update']); 
