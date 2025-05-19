@@ -82,6 +82,13 @@ class ProductsController extends Controller
                 'from_province' => 'nullable|string|max:255',   
                 'to_province' => 'nullable|string|max:255',  
             ]);
+
+            if ($request->category === 'Alojamiento') {
+                $request->validate([
+                    'subcategoria_alojamiento' => 'required|string|max:255',
+                ]);
+                $validated['category'] = 'Alojamiento - ' . $request->subcategoria_alojamiento;
+            }
     
             $data = $validated;
     
