@@ -29,7 +29,9 @@ class ProductsController extends Controller
             if ($request->filled('categoria')) {
                 $query->where('category', $request->categoria);
             }
-    
+            if ($request->filled('codigo_postal')) {
+                $query->where('codigo_postal', $request->codigo_postal);
+            }
             // Filtro: provincia
             if ($request->filled('provincia')) {
                 $query->where('province', $request->provincia);
@@ -70,6 +72,11 @@ class ProductsController extends Controller
                 'description' => 'required|string',
                 'price' => 'required|numeric|min:0',
                 'contact' => 'nullable|string',
+                'codigo_postal' => 'nullable|string|max:20',
+                'facebook' => 'nullable|url',
+                'instagram' => 'nullable|url',
+                'x' => 'nullable|url',
+                'linkedin' => 'nullable|url',
                 'coverImg' => 'required|image|mimes:jpeg,png,jpg,gif,avif,webp',
                 'extraImg' => 'nullable|image|mimes:jpeg,png,jpg,gif,avif,webp',
                 'province' => 'required|string',
@@ -78,10 +85,11 @@ class ProductsController extends Controller
                 'status' => 'nullable|string',
                 'address' => 'required|string',
                 'city' => 'required|string',
-                'experiencia_viaje' => 'nullable|string|max:255', 
-                'from_province' => 'nullable|string|max:255',   
-                'to_province' => 'nullable|string|max:255',  
+                'experiencia_viaje' => 'nullable|string|max:255',
+                'from_province' => 'nullable|string|max:255',
+                'to_province' => 'nullable|string|max:255',
             ]);
+            
 
             if ($request->category === 'Alojamiento') {
                 $request->validate([
@@ -139,7 +147,7 @@ class ProductsController extends Controller
     public function show(string $id)
     {
         try {
-            $product = Products::with('provider')->findOrFail($id);
+            $product = Products::with('provider.user')->findOrFail($id);
     
 
     
@@ -174,6 +182,11 @@ class ProductsController extends Controller
                 'description' => 'sometimes|required|string',
                 'price' => 'sometimes|required|numeric|min:0',
                 'contact' => 'sometimes|required|string',
+                'codigo_postal' => 'sometimes|nullable|string|max:20',
+                'facebook' => 'sometimes|nullable|url',
+                'instagram' => 'sometimes|nullable|url',
+                'x' => 'sometimes|nullable|url',
+                'linkedin' => 'sometimes|nullable|url',
                 'coverImg' => 'sometimes|image|mimes:jpeg,png,jpg,gif,avif,webp|max:2048',
                 'extraImg' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,avif,webp|max:2048',
                 'province' => 'sometimes|required|string',
@@ -183,7 +196,7 @@ class ProductsController extends Controller
                 'category' => 'sometimes|required|string|max:255',
                 'experiencia_viaje' => 'nullable|string|max:255', 
                 'from_province' => 'nullable|string|max:255',    
-                'to_province' => 'nullable|string|max:255',  
+                'to_province' => 'nullable|string|max:255',
             ]);
     
             $product = Products::findOrFail($id);
