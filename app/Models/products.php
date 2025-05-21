@@ -8,19 +8,25 @@ use Illuminate\Database\Eloquent\Model;
 class Products extends Model
 {
     protected $fillable = [
-    'name',
-    'category',
-    'description',
-    'province',
-    'pet',
-    'price',
-    'contact',
-    'city',
-    'address',
-    'provider_id',
-    'coverImg',
-    'extraImg'
+        'name',
+        'category',
+        'description',
+        'province',
+        'pet',
+        'price',
+        'contact',
+        'city',
+        'address',
+        'provider_id',
+        'coverImg',
+        'extraImg',
+        'codigo_postal',
+        'facebook',
+        'instagram',
+        'x',
+        'linkedin'
     ];
+    
     public function getCoverImgAttribute($value)
     {
         // Si la ruta ya tiene /storage/, devolverla tal cual
@@ -43,6 +49,7 @@ class Products extends Model
     }
     public function provider()
     {
-        return $this->belongsTo(Proveedor::class, 'provider_id', 'id');
+        return $this->belongsTo(\App\Models\Proveedor::class, 'provider_id');
     }
+    
 }
