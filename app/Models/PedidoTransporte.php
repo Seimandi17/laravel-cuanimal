@@ -9,7 +9,7 @@ class PedidoTransporte extends Model
 {
     use HasFactory;
 
-    protected $table = 'pedido_transportes'; // o el nombre real de tu tabla
+    protected $table = 'pedido_transportes';
 
     protected $fillable = [
         'nombre',
@@ -17,5 +17,11 @@ class PedidoTransporte extends Model
         'telefono',
         'origen',
         'destino',
+        'recogida',
+        'entrega',
+        'fecha',
+        'adultos',
+        'ninos',
+        'mascotas',
     ];
 }

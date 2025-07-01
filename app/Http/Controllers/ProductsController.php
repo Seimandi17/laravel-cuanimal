@@ -77,6 +77,9 @@ class ProductsController extends Controller
                 'instagram' => 'nullable|url',
                 'x' => 'nullable|url',
                 'linkedin' => 'nullable|url',
+                'reserva_link' => 'nullable|url|max:255',
+                'reservar_mesa_link' => 'nullable|url|max:255',
+                'pedidos_domicilio_link' => 'nullable|url|max:255',
                 'coverImg' => 'required|image|mimes:jpeg,png,jpg,gif,avif,webp',
                 'extraImg' => 'nullable|image|mimes:jpeg,png,jpg,gif,avif,webp',
                 'province' => 'required|string',
@@ -99,8 +102,11 @@ class ProductsController extends Controller
             }
     
             $data = $validated;
-    
+
+
+
             $provider = Proveedor::where('user_id', $user->id)->first();
+
     
             if (!$provider) {
                 return response()->json(['error' => 'Proveedor no encontrado para este usuario'], 404);
@@ -187,6 +193,9 @@ class ProductsController extends Controller
                 'instagram' => 'sometimes|nullable|url',
                 'x' => 'sometimes|nullable|url',
                 'linkedin' => 'sometimes|nullable|url',
+                'reserva_link' => 'nullable|url|max:255',
+                'reservar_mesa_link' => 'nullable|url|max:255',
+                'pedidos_domicilio_link' => 'nullable|url|max:255',
                 'coverImg' => 'sometimes|image|mimes:jpeg,png,jpg,gif,avif,webp|max:2048',
                 'extraImg' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,avif,webp|max:2048',
                 'province' => 'sometimes|required|string',
