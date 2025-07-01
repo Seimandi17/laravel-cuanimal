@@ -15,6 +15,12 @@ class CreatePedidoTransportesTable extends Migration
             $table->string('telefono');
             $table->string('origen')->nullable();
             $table->string('destino')->nullable();
+            $table->string('recogida'); // dirección de recogida
+            $table->string('entrega'); // dirección de entrega
+            $table->date('fecha'); // fecha del traslado
+            $table->unsignedInteger('adultos')->default(0);
+            $table->unsignedInteger('ninos')->default(0);
+            $table->unsignedInteger('mascotas')->default(0);
             $table->timestamps();
         });
     }

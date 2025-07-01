@@ -11,7 +11,8 @@ class ConversationController extends Controller
 {
     // ✅ Obtener todas las conversaciones del proveedor autenticado
     public function index()
-    {
+{
+    try {
         $user = Auth::user();
 
         if ($user->role_id !== 2) {
@@ -24,7 +25,16 @@ class ConversationController extends Controller
             ->get();
 
         return response()->json(['data' => $conversations]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Error al obtener conversaciones',
+            'error' => $e->getMessage(),
+            'linea' => $e->getLine(),
+            'archivo' => $e->getFile()
+        ], 500);
     }
+}
+
     public function adminIndex()
     {
         try {
@@ -35,21 +45,18 @@ class ConversationController extends Controller
             }
     
             $convs = \App\Models\Conversation::with(['messages.sender', 'provider'])
-                ->where('admin_id', $admin->id)
-                ->orderByDesc('updated_at')
-                ->get();
-    
+		    ->orderByDesc('updated_at')
+		    ->get();
             return response()->json(['data' => $convs]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al obtener conversaciones',
                 'error' => $e->getMessage(),         // 👈 Mostrará el mensaje de error real
-                'linea' => $e->getLine(),            // 👈 Línea exacta del fallo
+                'linea' => $e->getLine(),            // 👈 Línea exactta del fallo
                 'archivo' => $e->getFile()           // 👈 Archivo donde ocurre
             ], 500);
         }
     }
-    
     
     
 

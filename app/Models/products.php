@@ -24,32 +24,30 @@ class Products extends Model
         'facebook',
         'instagram',
         'x',
-        'linkedin'
+        'linkedin',
+        'reserva_link',
+        'reservar_mesa_link',
+        'pedidos_domicilio_link'
     ];
-    
+
     public function getCoverImgAttribute($value)
     {
-        // Si la ruta ya tiene /storage/, devolverla tal cual
         if (str_starts_with($value, '/storage/')) {
             return $value;
         }
-        // Si no, agregar el prefijo /storage/
         return $value ? Storage::url($value) : null;
     }
 
-    // Accessor para extraImg
     public function getExtraImgAttribute($value)
     {
-        // Si la ruta ya tiene /storage/, devolverla tal cual
         if (str_starts_with($value, '/storage/')) {
             return $value;
         }
-        // Si no, agregar el prefijo /storage/
         return $value ? Storage::url($value) : null;
     }
+
     public function provider()
     {
         return $this->belongsTo(\App\Models\Proveedor::class, 'provider_id');
     }
-    
 }
