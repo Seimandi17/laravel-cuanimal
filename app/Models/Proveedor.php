@@ -14,8 +14,6 @@ class Proveedor extends Model
         'email',
         'businessName',
         'user_id',
-        'category',
-        'description',
         // 'address',
         // 'certification',
         // 'availability',

@@ -18,7 +18,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:5173', 'https://cuanimal.com'],
+    'allowed_origins' => ['http://localhost:5173', 'https://cuanimal.com', 'https://api.cuanimal.com'],
 
     'allowed_origins_patterns' => [],
 

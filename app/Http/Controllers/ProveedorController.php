@@ -55,8 +55,6 @@ class ProveedorController extends Controller
             'phone' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'description' => 'required|string',
             // 'availability' => 'required|string|max:255',
             // 'certification' => 'nullable|string|max:255',
             // 'address' => 'required|string|max:255',
@@ -78,11 +76,12 @@ class ProveedorController extends Controller
             ], 500);
         }
         $provider = [
-            'businessName' => $validated['businessName'],
-            'phone' => $validated['phone'],
-            'category' => $validated['category'],
-            'description' => $validated['description'],
-            'user_id' => $user->id
+                'businessName' => $validated['businessName'],
+    'phone' => $validated['phone'],
+    'user_id' => $user->id,
+    'email' => $validated['email'],
+    'category' => $request->category ?? '',
+    'description' => $request->description ?? ''
         ];
 
         $data = Proveedor::create($provider);
@@ -142,8 +141,8 @@ class ProveedorController extends Controller
      */
     public function destroy(string $id)
     {
-        $provider = Proveedor::findOrFail($id);
-        $provider->delete();
+	    $provider = Proveedor::findOrFail($id);
+	    $provider->delete();
         return  response()->json(['message' => 'Provider removed successfully', 'status' => true]);
     }
 }

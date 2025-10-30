@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BlogPostController;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\ContactoGeneralController;
 use App\Http\Controllers\ContactoController;
@@ -28,6 +29,13 @@ Route::post('contacto-proveedor', [ProveedorContactoController::class, 'enviar']
 Route::post('/pedidos-transporte', [PedidoTransporteController::class, 'store']);
 Route::get('/pedidos-transporte', [PedidoTransporteController::class, 'index']);
 Route::get('/blog-recorrido', [RecorridoController::class, 'index']);
+Route::delete('products/{id}', [ProductsController::class, 'destroy']);
+
+// Rutas públicas del blog
+Route::get('blog-posts', [BlogPostController::class, 'index']);
+Route::get('blog-posts/{id}', [BlogPostController::class, 'show']);
+Route::get('blog-categorias', [BlogPostController::class, 'categorias']);
+Route::get('blog-posts/categoria/{categoria}', [BlogPostController::class, 'porCategoria']);
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -52,4 +60,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/conversations', [ConversationController::class, 'adminIndex']);
     Route::get('/admin/unassigned-conversations', [ConversationController::class, 'unassigned']);
     Route::post('/admin/conversations/{id}/assign', [ConversationController::class, 'assign']);
+    
+    // Rutas protegidas del blog (solo administradores)
+    Route::post('blog-posts', [BlogPostController::class, 'store']);
+    Route::put('blog-posts/{id}', [BlogPostController::class, 'update']);
+    Route::delete('blog-posts/{id}', [BlogPostController::class, 'destroy']);
+    Route::post('blog-posts/{id}/upload-image', [BlogPostController::class, 'uploadImage']);
 });
