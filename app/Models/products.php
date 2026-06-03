@@ -21,6 +21,8 @@ class Products extends Model
         'coverImg',
         'extraImg',
         'codigo_postal',
+        'lat',
+        'lng',
         'facebook',
         'instagram',
         'x',

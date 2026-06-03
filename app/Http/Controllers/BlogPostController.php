@@ -16,19 +16,23 @@ class BlogPostController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = BlogPost::with('autor:id,name')->recientes();
+            $query = BlogPost::orderBy('created_at', 'desc');
 
             // Filtros opcionales
             if ($request->has('categoria')) {
-                $query->categoria($request->categoria);
+                $query->where('categoria', $request->categoria);
             }
 
             if ($request->has('activo')) {
                 $query->where('activo', $request->activo);
             }
 
-            if ($request->has('destacado')) {
-                $query->destacado();
+            if ($request->has('es_destacado')) {
+                $query->where('es_destacado', true);
+            }
+
+            if ($request->has('es_publicado')) {
+                $query->where('es_publicado', true);
             }
 
             if ($request->has('busqueda')) {
@@ -42,10 +46,7 @@ class BlogPostController extends Controller
 
             $posts = $query->get();
 
-            return response()->json([
-                'success' => true,
-                'data' => $posts
-            ], 200);
+            return response()->json($posts, 200);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -62,15 +63,12 @@ class BlogPostController extends Controller
     public function show($id)
     {
         try {
-            $post = BlogPost::with('autor:id,name')->findOrFail($id);
+            $post = BlogPost::findOrFail($id);
             
             // Incrementar vistas
             $post->incrementarVistas();
 
-            return response()->json([
-                'success' => true,
-                'data' => $post
-            ], 200);
+            return response()->json($post, 200);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -88,20 +86,21 @@ class BlogPostController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'titulo' => 'required|string|max:255',
-            'resumen' => 'nullable|string|max:500',
+            'resumen' => 'required|string',
             'contenido' => 'required|string',
             'categoria' => 'required|in:Somos su Voz,Noticias,Humor,Plan Convive',
-            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'destacado' => 'nullable|boolean',
+            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+            'es_destacado' => 'nullable|boolean',
+            'es_publicado' => 'nullable|boolean',
             'activo' => 'nullable|boolean',
-            'fecha_publicacion' => 'nullable|date',
         ], [
             'titulo.required' => 'El título es obligatorio',
+            'resumen.required' => 'El resumen es obligatorio',
             'contenido.required' => 'El contenido es obligatorio',
             'categoria.required' => 'La categoría es obligatoria',
             'categoria.in' => 'La categoría seleccionada no es válida',
             'imagen.image' => 'El archivo debe ser una imagen',
-            'imagen.max' => 'La imagen no debe superar los 2MB',
+            'imagen.max' => 'La imagen no debe superar los 10MB',
         ]);
 
         if ($validator->fails()) {
@@ -113,15 +112,35 @@ class BlogPostController extends Controller
         }
 
         try {
-            $data = $request->all();
-            $data['autor_id'] = auth()->id();
+            // Generar slug automáticamente desde el título
+            $slug = Str::slug($request->titulo);
+            
+            // Asegurar que el slug sea único
+            $count = BlogPost::where('slug', 'like', $slug . '%')->count();
+            if ($count > 0) {
+                $slug = $slug . '-' . ($count + 1);
+            }
+            
+            $data = [
+                'titulo' => $request->titulo,
+                'slug' => $slug,
+                'resumen' => $request->resumen,
+                'contenido' => $request->contenido,
+                'categoria' => $request->categoria,
+                'es_destacado' => $request->boolean('es_destacado', false),
+                'es_publicado' => $request->boolean('es_publicado', false),
+                'activo' => $request->boolean('activo', true),
+                'vistas' => 0,
+            ];
 
             // Manejar la subida de imagen
             if ($request->hasFile('imagen')) {
                 $image = $request->file('imagen');
-                $imageName = time() . '_' . Str::slug($request->titulo) . '.' . $image->getClientOriginalExtension();
-                $imagePath = $image->storeAs('blog', $imageName, 'public');
-                $data['imagen'] = $imagePath;
+                $imageName = 'blog_' . time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+                $imagePath = $image->storeAs('blog-images', $imageName, 'public');
+                // Construir URL completa usando la URL base de la aplicación
+                $baseUrl = rtrim(config('app.url'), '/');
+                $data['imagen_url'] = $baseUrl . '/storage/' . $imagePath;
             }
 
             $post = BlogPost::create($data);
@@ -148,13 +167,13 @@ class BlogPostController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'titulo' => 'sometimes|required|string|max:255',
-            'resumen' => 'nullable|string|max:500',
+            'resumen' => 'sometimes|required|string',
             'contenido' => 'sometimes|required|string',
             'categoria' => 'sometimes|required|in:Somos su Voz,Noticias,Humor,Plan Convive',
-            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'destacado' => 'nullable|boolean',
+            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+            'es_destacado' => 'nullable|boolean',
+            'es_publicado' => 'nullable|boolean',
             'activo' => 'nullable|boolean',
-            'fecha_publicacion' => 'nullable|date',
         ]);
 
         if ($validator->fails()) {
@@ -167,19 +186,41 @@ class BlogPostController extends Controller
 
         try {
             $post = BlogPost::findOrFail($id);
-            $data = $request->all();
+            $data = [];
+
+            if ($request->has('titulo')) {
+                $data['titulo'] = $request->titulo;
+                // Regenerar slug si el título cambió
+                $slug = Str::slug($request->titulo);
+                $count = BlogPost::where('slug', 'like', $slug . '%')->where('id', '!=', $id)->count();
+                if ($count > 0) {
+                    $slug = $slug . '-' . ($count + 1);
+                }
+                $data['slug'] = $slug;
+            }
+            if ($request->has('resumen')) $data['resumen'] = $request->resumen;
+            if ($request->has('contenido')) $data['contenido'] = $request->contenido;
+            if ($request->has('categoria')) $data['categoria'] = $request->categoria;
+            if ($request->has('es_destacado')) $data['es_destacado'] = $request->boolean('es_destacado');
+            if ($request->has('es_publicado')) $data['es_publicado'] = $request->boolean('es_publicado');
+            if ($request->has('activo')) $data['activo'] = $request->boolean('activo');
 
             // Manejar la actualización de imagen
             if ($request->hasFile('imagen')) {
                 // Eliminar imagen anterior si existe
-                if ($post->imagen && Storage::disk('public')->exists($post->imagen)) {
-                    Storage::disk('public')->delete($post->imagen);
+                if ($post->imagen_url) {
+                    $oldPath = str_replace('/storage/', '', parse_url($post->imagen_url, PHP_URL_PATH));
+                    if (Storage::disk('public')->exists($oldPath)) {
+                        Storage::disk('public')->delete($oldPath);
+                    }
                 }
 
                 $image = $request->file('imagen');
-                $imageName = time() . '_' . Str::slug($request->titulo ?? $post->titulo) . '.' . $image->getClientOriginalExtension();
-                $imagePath = $image->storeAs('blog', $imageName, 'public');
-                $data['imagen'] = $imagePath;
+                $imageName = 'blog_' . time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+                $imagePath = $image->storeAs('blog-images', $imageName, 'public');
+                // Construir URL completa usando la URL base de la aplicación
+                $baseUrl = rtrim(config('app.url'), '/');
+                $data['imagen_url'] = $baseUrl . '/storage/' . $imagePath;
             }
 
             $post->update($data);
@@ -187,7 +228,7 @@ class BlogPostController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Post actualizado exitosamente',
-                'data' => $post
+                'data' => $post->fresh()
             ], 200);
 
         } catch (\Exception $e) {
@@ -208,8 +249,11 @@ class BlogPostController extends Controller
             $post = BlogPost::findOrFail($id);
 
             // Eliminar imagen asociada si existe
-            if ($post->imagen && Storage::disk('public')->exists($post->imagen)) {
-                Storage::disk('public')->delete($post->imagen);
+            if ($post->imagen_url) {
+                $oldPath = str_replace('/storage/', '', parse_url($post->imagen_url, PHP_URL_PATH));
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
             }
 
             $post->delete();

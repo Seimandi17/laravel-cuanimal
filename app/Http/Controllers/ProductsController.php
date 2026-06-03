@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Products;
+use App\Services\ProductGeocoder;
 use Illuminate\Http\Request;
 use App\Models\Proveedor;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -12,6 +13,10 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductsController extends Controller
 {
+    public function __construct(private ProductGeocoder $geocoder)
+    {
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -88,6 +93,8 @@ class ProductsController extends Controller
                 'status' => 'nullable|string',
                 'address' => 'required|string',
                 'city' => 'required|string',
+                'lat' => 'nullable|numeric|between:-90,90',
+                'lng' => 'nullable|numeric|between:-180,180',
                 'experiencia_viaje' => 'nullable|string|max:255',
                 'from_province' => 'nullable|string|max:255',
                 'to_province' => 'nullable|string|max:255',
@@ -101,7 +108,7 @@ class ProductsController extends Controller
                 $validated['category'] = 'Alojamiento - ' . $request->subcategoria_alojamiento;
             }
     
-            $data = $validated;
+            $data = array_merge($validated, $this->geocoder->resolve($validated));
 
 
 
@@ -202,6 +209,8 @@ class ProductsController extends Controller
                 'pet' => 'sometimes|in:perros,gatos,ambos',
                 'address' => 'sometimes|required|string',
                 'city' => 'sometimes|required|string',
+                'lat' => 'sometimes|nullable|numeric|between:-90,90',
+                'lng' => 'sometimes|nullable|numeric|between:-180,180',
                 'category' => 'sometimes|required|string|max:255',
                 'experiencia_viaje' => 'nullable|string|max:255', 
                 'from_province' => 'nullable|string|max:255',    
@@ -209,8 +218,27 @@ class ProductsController extends Controller
             ]);
     
             $product = Products::findOrFail($id);
-    
+
             $data = $validated;
+            $locationChanged = collect(['address', 'city', 'province', 'codigo_postal'])
+                ->contains(fn ($field) => array_key_exists($field, $validated));
+
+            if ($locationChanged || (array_key_exists('lat', $validated) && array_key_exists('lng', $validated))) {
+                $locationData = array_merge(
+                    $product->only(['address', 'city', 'province', 'codigo_postal', 'lat', 'lng']),
+                    $validated
+                );
+
+                if ($locationChanged && !array_key_exists('lat', $validated)) {
+                    unset($locationData['lat']);
+                }
+
+                if ($locationChanged && !array_key_exists('lng', $validated)) {
+                    unset($locationData['lng']);
+                }
+
+                $data = array_merge($data, $this->geocoder->resolve($locationData));
+            }
     
             if ($request->hasFile('coverImg')) {
                 if ($product->coverImg) {

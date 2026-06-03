@@ -17,9 +17,15 @@ use App\Http\Controllers\HistorialController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::get('products', [ProductsController::class, 'index']);
-Route::get('products/{id}', [ProductsController::class, 'show']);
+// Rutas públicas
+Route::get('products', [ProductsController::class, 'index']); // Listado público para marketing
 Route::post('send-message', [MessageController::class, 'sendMessage']);
+
+// Rutas que requieren autenticación
+Route::middleware('auth:sanctum')->group(function () {
+    // Detalles de producto requieren autenticación
+    Route::get('products/{id}', [ProductsController::class, 'show']);
+});
 Route::post('login', [UserController::class, 'login']);
 Route::post('register', [UserController::class, 'store']);
 Route::post('proveedor', [ProveedorController::class, 'store']);
